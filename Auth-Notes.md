@@ -95,6 +95,111 @@
         return jwt.encode({ sub: user.id, iat: timestamp }, config.secret);
     }
     ```
-  
-  ### Decoding the JWT
- 
+
+### Policing Route Access with Passport
+1. At this point, we are signing up users, and giving them a token upon signing up. However, we still aren't doing anything for users that are already registered and are logging in; also, we need to have a means of verifying a user's token before allowing access to a protected resource (see the flow chart in the diagrams).
+
+2. Note that we want to check status only on routes with protected resources, while there may be many routes that should be accessible by anyone.
+
+3. We will handle this problem with a library called **passport**. Although it is usually used for cookie-based authentication, we will be able to use it with our JWTs. We start with the following installation:
+    ```
+    npm install --save passport passport-jwt
+    ```
+    
+4. Passport can best be thought of as an ecosystem, allowing access to a variety of different authentication **strategies**. In our app, for example, we could be using a JWT verification strategy and a username/password strategy.
+
+5. Next, we should set up a "services" directory on the project root, and place a file, **passport.js** inside that folder. This file will be used to set up a strategy and then, at the end, we tell passport to apply our strategy as middleware with the line:
+    ```javascript
+    passport.use([strategyName]);
+    ```
+6. Then, in our routes page (*router.js*), we **require in** our passport services file (we don't have to assign it to a variable or call it anywhere - simply requiring it will cause it to run, including the last line presented above). Then we add the strategy to each proptected route as follows:
+    ```javascript
+    const Authentication = require('./controllers/authController');
+    require('./services/passport');
+    const passport = require('passport');
+
+    const requireAuth = passport.authenticate('jwt', { session: false });
+
+    module.exports = function(app) {
+        app.get('/', requireAuth, function(req, res) {
+            . . .
+        });
+
+        app.post('/signup', Authentication.signup);
+    }
+    ```
+    **requireAuth** is a key line in the above code, where we assign to the variable the passport strategy, which is idendtified as a web token strategy by the first parameter. The second parameter overrides the default passport setting of making a cookie-based session upon successful auth. We do not want that, as we are using the token-based authentication.
+
+7. Now, back to the *services/passport.js* file, where we set up our auth strategy. There is a bit of behind-the-screen magic going on here, so not everything is traceable on its face, but the comments provided should give pretty good direction:
+    ```javascript
+    const passport = require('passport');
+    const User = require('../models/users');
+    const config = require('../config');
+    const JwtStrategy = require('passport-jwt').Strategy;
+    const ExtractJwt = require('passport-jwt').ExtractJwt;
+
+    // set up options for JWT Strategy
+    // note that we are adding our token to the header
+    // we have to tell passport where to look for it
+    const jwtOptions = {
+        jwtFromRequest: ExtractJwt.fromHeader('authorization'),
+        secretOrKey: config.secret
+    };
+
+    // create jwt Strategy
+    // the payload is the decoded JWToken
+    // done is a callback we need to call depending on success of auth
+    const jwtLogin = new JwtStrategy(jwtOptions, function(payload, done) {
+        // check if userID in the payload exists in our database
+        // if yes, call done() with the user as a parameter
+        // if no, call done without the user object
+        User.findById(payload.sub, function(err, user) {
+            // handle situation such as communication failure
+            if (err) {
+                return done(err, false);
+            }
+            // successful login, move on with user
+            if (user) {
+                done(null, user);
+            } else {
+                // auth worked, but user was not authorized
+                done(null, false);
+            }
+        });
+    });
+
+    // tell passport to use this strategy
+    passport.use(jwtLogin);
+    ```
+### Adding Sign-In Capabilities
+1. So far, we have a way for a new user to register and get a token. We also have a way to check the token when a route is accessed and make certain the user is authorized.  Now, we will address the need of a registered user to log in and get a token to allow access.
+
+2. This will involve a new passport strategy, one of checking the username and password against our database, so we will need to set it up. To start off, we need to run at the command line:
+    ```
+    npm install --save passport-local
+    ```
+3. In our *services/passport.js* file, we need to set up the **local strategy**, which is how the username/password authorization is termed.  So, we begin by requiring in our *passport-local* library, and inser the following code:
+    ```javascript
+    const LocalStrategy = require('passport-local');
+
+    const localOptions = { usernameField: 'email'};
+    const localLogin = new LocalStrategy(localOptions, function(email, password, done){
+	
+    });
+    ```
+    **localOptions**: by default, the local-strategy expects a username as a propery called "username". Since our property is termed "email", we have to override the default value of the *usernameField*.
+
+4. One thing we will need to do is prepare a way to check the entered password against the hashed and salted password contained in the database for the user. To do this, we will add an instance method to the UserSchema object, which will call on the *bcrypt* library:
+    ```javascript
+    // models/users.js
+    userSchema.methods.comparePassword = function(candidatePassword, callback) {
+        bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, isMatch);
+        });
+    }
+    ```
+5. 
+    

@@ -6,8 +6,15 @@ mongoose.Promises = global.Promises;
 
 function tokenForUser(user) {
 	const timestamp = new Date().getTime();
-	return jwt.encode({ sub: user.id, iat: timestamp }, config.secret);
+	return jwt.encode({ sub: user.id, iat: timestamp, favpart: 'butt' }, config.secret);
 }
+
+exports.signin = function (req, res, next) {
+	res.status(200).json({
+		token: tokenForUser(req.user)
+	})
+}
+
 exports.signup = function(req, res, next) {
 	if (!req.body.email || !req.body.password) {
 		res.status(422).send({ error: 'Must submit a username and password!' });
