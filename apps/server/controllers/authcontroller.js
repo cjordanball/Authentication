@@ -6,7 +6,7 @@ mongoose.Promises = global.Promises;
 
 function tokenForUser(user) {
 	const timestamp = new Date().getTime();
-	return jwt.encode({ sub: user.id, iat: timestamp, favpart: 'butt' }, config.secret);
+	return jwt.encode({ sub: user.id, iat: timestamp }, config.secret);
 }
 
 exports.signin = function (req, res, next) {
