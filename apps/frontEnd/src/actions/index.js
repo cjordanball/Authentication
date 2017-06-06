@@ -9,19 +9,31 @@ export const signInUser = ({ email, password }, history) => {
 		// submit email/password to server
 		axios.post(`${ROOT_URL}/signin`, { email, password })
 		// if request good
-			.then((user) => {
-				console.log('SUCCESS');
+			.then((res) => {
 				// update state to indicate user is authed
 				dispatch({ type: ActionTypes.SIGN_IN_USER });
 				// save the JWT token
+				localStorage.setItem('token', res.data.token);
 				// redirect to the proper Route
 				history.push('/feature');
-				console.log('success: ', user);
 			})
 			// if request is bad
 			.catch((error) => {
-				console.log('ERROR', error);
 				// show error to user
+				dispatch(authError('Bad Login Info'));
 			});
 	};
 };
+
+export const signOutUser = () => (
+	{
+		type: ActionTypes.SIGN_OUT_USER
+	}
+)
+
+export const authError = error => (
+	{
+		type: ActionTypes.AUTH_ERROR,
+		payload: error
+	}
+);

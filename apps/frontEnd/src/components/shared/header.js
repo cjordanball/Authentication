@@ -1,27 +1,36 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import * as actions from '../../actions';
 
 class Header extends Component {
 
 	render() {
-		console.log(this.props);
 		return (
 			<nav className="navbar navbar-light">
+				<Link to="/" className="navbar-brand">Redux Auth</Link>
 				<ul className="nav navbar-nav">
-					<li className="nav-item">
-						{this.props.auth ? (
-							<Link to="/">Sign out</Link>
-						) :
-						(
-							<Link to="/signin">Sign in</Link>
+					{this.props.auth.authenticated ? (
+						<li className="nav-item">
+							<Link
+								onClick={this.props.signOutUser}
+								className="nav-link"
+								to="/signout"
+							>
+								Sign out
+							</Link>
+						</li>
+					) :
+					([
+						<li className="nav-item" key="signin">
+							<Link className="nav-link" to="/signin">Sign in</Link>
+						</li>,
+						<li className="nav-item" key="signup">
+							<Link className="nav-link" to="/signup">
+								Register
+							</Link>
+						</li>]
 						)}
-					</li>
-					<li className="nav-item">
-						<Link to="/signup">
-							Register
-						</Link>
-					</li>
 				</ul>
 			</nav>
 		);
@@ -34,4 +43,4 @@ function mapStateToProps(state) {
 	};
 }
 
-export default connect(mapStateToProps)(Header);
+export default connect(mapStateToProps, actions)(Header);
