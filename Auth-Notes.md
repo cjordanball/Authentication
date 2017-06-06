@@ -288,5 +288,13 @@
     
     . . .
     ```
-    
-    ```
+### Handling the JWT
+1. To save our JWToken, we will use **localStorage**. localStorage is memory dedicated to the browser on the client machine, **not** on the server. It can be thought of as local hard drive access.
+
+2. Localstorage cannot be shared among the user's different devices.
+
+3. By storing in localStorage, the JWT will be easily accessible to be attached to any requests that require authentication.
+
+4. Localstorage outlasts the session, so the next time the user revisits the site, the JWT is still available, unless it has been deleted.
+
+5. **Localstorage is not shared across domains!**

@@ -16,7 +16,7 @@ class SignInPage extends Component {
 				<label htmlFor={field.name}>{field.label}</label>
 				<input
 					className="form-control"
-					type="text"
+					type={field.type}
 					{...field.input}
 				/>
 			</fieldset>
@@ -30,23 +30,36 @@ class SignInPage extends Component {
 				<Field
 					label="Email"
 					name="email"
+					type="text"
 					component={this.renderField}
 				/>
 				<Field
 					label="password"
+					type="password"
 					name="password"
 					component={this.renderField}
 				/>
+				{this.props.errorMessage ? (
+					<div className="alert alert-danger">
+						<strong>Oops!</strong> {this.props.errorMessage}
+					</div>
+			) : ''}
 				<button type="submit" className="btn btn-primary">Sign in</button>
 			</form>
 		);
 	}
 }
 
+const mapStateToProps = state => (
+	{
+		errorMessage: state.auth.error
+	}
+);
+
 export default reduxForm(
 	{
 		form: 'SignInForm',
 		fields: ['email', 'password']
 	})(
-		connect(null, actions)(SignInPage)
+		connect(mapStateToProps, actions)(SignInPage)
 	);
