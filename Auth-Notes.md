@@ -201,5 +201,92 @@
         });
     }
     ```
-5. 
+    **Note**: The Schema has a *methods* property which is an object containing any methods assigned to instances of the UserSchema. So, wherever we need to use it, we can import the UserSchema and then use the **comparePassword()** method.
+
+5. So, we will use our *comparePassword* method in our **localLogin()** method:
+    ```javascript
+    const localLogin = new LocalStrategy(localOptions, function(email, password, done){
+        User.findOne({ email: email })
+        // here we verify the email and password, then call
+        .then((user) => {
+            if (!user) {
+                return done(null, false)
+            }
+            //compare passwords
+            user.comparePassword(password, (err, isMatch) => {
+                if (err) {
+                    return done(err);
+                }
+                // if not, call done with false as the second parameter
+                if (!isMatch) {
+                    return done(null, false);
+                }
+                // done if it matches known email and password
+                return done(null, user);
+            });
+        })
+	.catch((err) => done(err));
+    });
+    ```
+    Of course, do not forget to include "passport.use(localLogin)" at the end of the *passport.js* file.
+    **Important**: The *done()* callback is supplied by *passport*, and one of the things it does is, if there is a *user*, it assigns it to the *req* object.
+
+
+## Frontend
+1. In this section, we are going to create a front-end interface to allow the user to sign-in, sign-up, or sign-out. There will be four pages, from the user's perspective:
+
+    a. a landing page, where the user will first arrive,
     
+    b. a sign-in page, where a registered user can sign in,
+    
+    c. a sign-up page, where a new user can sign up, and
+    
+    d. a feature page, which will contain a protected route.
+    
+2. We will not store our token in our application state, but will store it within our browser session.  Our **application state** will manage two items of information:
+    ```json
+    {
+        auth: {
+            authenticated: BOOLEAN,
+            error: STRING
+        }
+    }
+    ```
+3. We will have action creators for signing in, signing out, and for signing up to toggle the authenticated property.
+
+### General Flow
+1. After we create a sign-in form, we will need to make an *action creator* to handle submitting the e-mail/password combination to the servrer. It will get back **either** a negative response, or a JWT token. We need to handle each branch, by showing an error message if no login occurs, or by redirecting an authenticated user to the start-up page, saving the token, and updating application state.
+
+2. In order to have greater flexibility in handling the various possible returns from the back end, we will use **redux-thunk** instead of **redux promise** as our middleware.
+
+### CORS
+1. One frustrating error that we will receive using our current setup of a front end making AJAX requests to a back-end server is the "No 'Access-Control-Allow-Origin' header is present on the requested resource".
+
+2. **CORS** stands for **cross origin resource sharing**. It is a security concept for the protection of users in a browser environment, to prevent a browser from accessing other websites.
+
+3. Under CORS, the domain and port of the requesting device is attached to every request that is made. If we look at the *request headers*, we will see a *host* and an *origin* property.  The requested server can then inspect this domain and port and, if different from the server, can refuse the request.
+
+4. CORS issues cannot be solved on the client side alone. To fix CORS issues, we can change our server to allow the requests.
+
+5. In order to fix the problem, we change our API to allow such requests. To do so, take the following steps:
+
+    a. In the directory of the back-end server, run the following:
+    ```
+    npm install --save cors
+    ```
+    
+    b. In the *index.js* file, require in cors, and then add it to the middleware stack:
+    ```javascript
+    const cors = require('cors');
+    
+    . . .
+    
+    app.use(morgan('combined'));
+    app.use(cors());
+    app.use(bodyParser.json({ type: '*/*' }));
+    router(app);
+    
+    . . .
+    ```
+    
+    ```
