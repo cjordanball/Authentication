@@ -1,7 +1,15 @@
 import React, { Component } from 'react';
 import { Field, reduxForm } from 'redux-form';
+import { connect } from 'react-redux';
+
+import * as actions from '../../actions';
 
 class SignInPage extends Component {
+	onSubmit({ email, password }) {
+		// Need to do sometbing to log in;
+		this.props.signInUser({ email, password }, this.props.history);
+	}
+
 	renderField(field) {
 		return (
 			<fieldset className="form-group">
@@ -15,14 +23,10 @@ class SignInPage extends Component {
 		);
 	}
 
-	onSubmit({ email, password }) {
-		console.log(email, password);
-		//Need to do sometbing to log in;
-	}
 	render() {
 		const { handleSubmit } = this.props;
 		return (
-			<form onSubmit={handleSubmit((values) => this.onSubmit(values))}>
+			<form onSubmit={handleSubmit(values => this.onSubmit(values))}>
 				<Field
 					label="Email"
 					name="email"
@@ -39,7 +43,10 @@ class SignInPage extends Component {
 	}
 }
 
-export default reduxForm({
-	form: 'SignInForm',
-	fields: ['email', 'password']
-})(SignInPage);
+export default reduxForm(
+	{
+		form: 'SignInForm',
+		fields: ['email', 'password']
+	})(
+		connect(null, actions)(SignInPage)
+	);

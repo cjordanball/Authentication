@@ -56,7 +56,7 @@ const config = {
 	devServer: {
 		historyApiFallback: true,
 		contentBase: path.resolve(__dirname, 'dist'),
-		port: 3142
+		port: 3333
 	}
 };
 
