@@ -26,26 +26,31 @@ class SignInPage extends Component {
 	render() {
 		const { handleSubmit } = this.props;
 		return (
-			<form onSubmit={handleSubmit(values => this.onSubmit(values))}>
-				<Field
-					label="Email"
-					name="email"
-					type="text"
-					component={this.renderField}
-				/>
-				<Field
-					label="password"
-					type="password"
-					name="password"
-					component={this.renderField}
-				/>
-				{this.props.errorMessage ? (
-					<div className="alert alert-danger">
-						<strong>Oops!</strong> {this.props.errorMessage}
-					</div>
-			) : ''}
-				<button type="submit" className="btn btn-primary">Sign in</button>
-			</form>
+			<div>
+				<h2>
+					Please Sign In
+				</h2>
+				<form onSubmit={handleSubmit(values => this.onSubmit(values))}>
+					<Field
+						label="Email"
+						name="email"
+						type="text"
+						component={this.renderField}
+					/>
+					<Field
+						label="Password"
+						type="password"
+						name="password"
+						component={this.renderField}
+					/>
+					{this.props.errorMessage ? (
+						<div className="alert alert-danger">
+							<strong>Oops!</strong> {this.props.errorMessage}
+						</div>
+				) : ''}
+					<button type="submit" className="btn btn-primary">Sign in</button>
+				</form>
+			</div>
 		);
 	}
 }

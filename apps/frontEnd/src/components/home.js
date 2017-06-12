@@ -1,7 +1,7 @@
 import React from 'react';
 
 const Home = () => (
-	<div>
+	<div className="container">
 		<h1>
 			This is a home?
 		</h1>
