@@ -1,11 +1,28 @@
-import React from 'react';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import * as actions from '../actions';
 
-const FeaturePage = () => (
-	<div>
-		<h1>
-			This is a feature?
-		</h1>
-	</div>
-);
+class FeaturePage extends Component {
+	componentWillMount() {
+		this.props.fetchMessage();
+	}
+	render() {
+		console.log('this.props', this.props);
+		return (
+			<div>
+				<h1>
+					{this.props.message}
+				</h1>
+			</div>
+		);
+	}
+}
 
-export default FeaturePage;
+const mapStateToProps = (state) => {
+	console.log('state', state);
+	return {
+		message: state.auth.message
+	};
+};
+
+export default connect(mapStateToProps, actions)(FeaturePage);

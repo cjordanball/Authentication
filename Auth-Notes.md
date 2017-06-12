@@ -298,3 +298,49 @@
 4. Localstorage outlasts the session, so the next time the user revisits the site, the JWT is still available, unless it has been deleted.
 
 5. **Localstorage is not shared across domains!**
+
+## Protecting Front-End Routes with JWT
+1. Once we have created our back-end and our signin/signup pages on the front end, we can now register as a user, and log in as a registered user. On the back end, we will be restricted from accessing routes we are not authorized to access, and this is the more serious goal, because we want to protect our database, etc.  But we will also want to make a good user experience by limiting access to pages not authorized to visit, and providing feedback.
+
+2. What we will do is check our state to see if the authenticated property is true. Then, we can protect those routes we wish by wrapping them with a higher-order component to add the authentication functionality.
+
+3. Our Higher Order component will look as follows (for more discussion on HOCs, see the React Notes):
+    ```javascript
+    // require_auth.js
+    import React, { Component } from 'react';
+    import { connect } from 'react-redux';
+
+    export default function (ComposedComponent) {
+        class Authentication extends Component {
+            componentWillMount() {
+                if (!this.props.authenticated) {
+                    this.props.history.push('/signup');
+                }
+            }
+            componentWillUpdate(nextProps) {
+                if (!nextProps.authenticated) {
+                    this.props.history.push('/signup');
+                }
+            }
+            render() {
+                return <ComposedComponent {...this.props} />;
+            }
+	}
+
+	const mapStateToProps = state => (
+            {
+                authenticated: state.auth.authenticated
+            }
+        );
+
+        return connect(mapStateToProps)(Authentication);
+    }
+    ```
+4. Then, in our *index.js* file, we can wrap protected routes as follows:
+    ```javascript
+    import RequireAuth from '[path to HOComponent';
+    <Route path="/feature" component={RequireAuth([component]} />
+    ```
+    
+## Making Authenticated API Requests
+1. Once the user logs in, we have access to the JWT token in localStorage.

@@ -13,7 +13,6 @@ class Header extends Component {
 					{this.props.auth.authenticated ? (
 						<li className="nav-item">
 							<Link
-								onClick={this.props.signOutUser}
 								className="nav-link"
 								to="/signout"
 							>
